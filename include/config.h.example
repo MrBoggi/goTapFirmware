@@ -1,0 +1,27 @@
+#pragma once
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// ==========================================
+// WiFi Settings
+// ==========================================
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+
+// ==========================================
+// goTapList API Settings
+// ==========================================
+// Base URL for the goTapList backend API
+#define API_BASE_URL "http://192.168.1.100:8080/api"
+
+// ==========================================
+// Device Settings
+// ==========================================
+// ID of the tap this ESP32 is attached to
+#define TAP_ID "tap-01"
+
+// Display configuration (refresh rates etc)
+#define DISPLAY_REFRESH_INTERVAL_MS 60000
+
+#endif // CONFIG_H
