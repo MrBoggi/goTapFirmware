@@ -1,0 +1,29 @@
+# PlatformIO Directory
+.pio/
+
+# PlatformIO / VS Code files
+.vscode/
+
+# Node.js / npm (if any web/frontend dependencies are ever added)
+node_modules/
+dist/
+
+# Configuration files with secrets
+config.h
+credentials.h
+
+# Compiled objects
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
