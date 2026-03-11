@@ -26,3 +26,4 @@ Konfigurasjon skjer per enhet:
 ## Relaterte linker
 - Backend API: [goTapList](https://github.com/MrBoggi/goTapList)
 - Frontend: [goTOVGUI](https://github.com/MrBoggi/goTOVGUI)
+- Eksempel oled skjerm: [goTapOLED](https://www.aliexpress.com/item/1005008995336669.html?spm=a2g0o.productlist.main.30.e47f0VM50VM5QN&algo_pvid=3f4e8b9c-6b0e-4aba-bdd6-13b22a232e2c&pdp_ext_f=%7B%22order%22%3A%2259%22%2C%22eval%22%3A%221%22%2C%22fromPage%22%3A%22search%22%7D&utparam-url=scene%3Asearch%7Cquery_from%3A%7Cx_object_id%3A1005008995336669%7C_p_origin_prod%3A)
