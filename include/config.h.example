@@ -5,23 +5,32 @@
 
 // ==========================================
 // WiFi Settings
+// Note: WIFI_SSID / WIFI_PASSWORD are reserved by ESP-IDF internals,
+//       so we prefix with GOTAP_ to avoid linker conflicts.
 // ==========================================
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define GOTAP_WIFI_SSID     "YOUR_WIFI_SSID"
+#define GOTAP_WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 
 // ==========================================
 // goTapList API Settings
 // ==========================================
-// Base URL for the goTapList backend API
+// Base URL for the goTapList backend API (no trailing slash)
 #define API_BASE_URL "http://192.168.1.100:8080/api"
 
 // ==========================================
 // Device Settings
 // ==========================================
-// ID of the tap this ESP32 is attached to
+// ID of the tap this ESP32 is physically attached to
 #define TAP_ID "tap-01"
 
-// Display configuration (refresh rates etc)
+// Keg ID – used in POST /api/kegs/{kegID}/pour.
+// In a future iteration this will be fetched dynamically from the display API.
+#define KEG_ID "keg-01"
+
+// How often (ms) to refresh tap data from the API
 #define DISPLAY_REFRESH_INTERVAL_MS 60000
+
+// HTTP request timeout (ms)
+#define HTTP_TIMEOUT_MS 5000
 
 #endif // CONFIG_H
