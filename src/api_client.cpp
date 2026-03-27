@@ -68,15 +68,26 @@ bool fetchTapDisplay(TapData& out) {
     }
 
     // Populate struct – use strlcpy to stay within buffer bounds
-    strlcpy(out.beerName,       doc["beerName"]   | "",   sizeof(out.beerName));
+    strlcpy(out.beerName,       doc["beer_name"]  | "",   sizeof(out.beerName));
     
-    // Logo fallback: if "beerLogo" is missing but "beerId" exists, construct the URL (like goTOVGUI)
-    const char* logo = doc["beerLogo"] | "";
-    if (logo[0] == '\0' && !doc["beerId"].isNull()) {
-        snprintf(out.logoUrl, sizeof(out.logoUrl), "%s/beers/%d/logo", API_BASE_URL, doc["beerId"].as<int>());
+    // Construct optimized logo URL
+    const char* rawLogoUrl = doc["logo_url"] | "";
+    if (rawLogoUrl[0] == '/') {
+        // Relative URL: Prepend base URL
+        snprintf(out.logoUrl, sizeof(out.logoUrl), "%s%s", API_BASE_URL, rawLogoUrl);
     } else {
-        strlcpy(out.logoUrl, logo, sizeof(out.logoUrl));
+        // Absolute URL
+        strlcpy(out.logoUrl, rawLogoUrl, sizeof(out.logoUrl));
     }
+
+    // Ensure we use the hardware-optimized /display endpoint if not already present
+    // The optimized endpoint returns 300x300 JPEG for memory-efficient tjpgd decoding.
+    if (out.logoUrl[0] != '\0' && !strstr(out.logoUrl, "/display")) {
+        strlcat(out.logoUrl, "/display", sizeof(out.logoUrl));
+    }
+
+    strlcpy(out.kegId,          doc["keg_id"]     | "", sizeof(out.kegId));
+    out.abv              = doc["abv"]              | 0.0f;
 
     if (out.logoUrl[0] != '\0') {
         Serial.printf("[API] Logo URL: %s\n", out.logoUrl);
