@@ -26,7 +26,11 @@ jobs:
         run: cp include/gotap_config.h.example include/gotap_config.h
 
       - name: Run PlatformIO Build
-        run: pio run -e JC8048W550C
+        run: |
+          # Stub out ARM-specific assembler files that are incompatible with Xtensa
+          find ~/.platformio .pio -name "lv_blend_helium.S" -exec sh -c 'echo "/* stubbed for Xtensa */" > "$1"' _ {} \; 2>/dev/null || true
+          find ~/.platformio .pio -name "lv_blend_neon.S" -exec sh -c 'echo "/* stubbed for Xtensa */" > "$1"' _ {} \; 2>/dev/null || true
+          pio run -e JC8048W550C
 
       - name: Upload Firmware Artifact
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development')
