@@ -36,6 +36,9 @@ jobs:
       - name: Install PlatformIO
         run: pip install --upgrade platformio
 
+      - name: Create config from template
+        run: cp include/gotap_config.h.example include/gotap_config.h
+
       - name: Run PlatformIO Build
         run: pio run -e JC8048W550C
 
