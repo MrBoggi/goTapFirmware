@@ -40,9 +40,22 @@ jobs:
 
       - name: Upload Firmware Artifact
         if: success()
-        env:
-          SANITIZED_REF: ${{ github.ref_name }}
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
           path: .pio/build/JC8048W550C/firmware.bin
+
+      - name: Deploy firmware to goTapList OTA
+        if: success() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development')
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          if [ "$BRANCH" = "main" ]; then
+            VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-${GITHUB_SHA::7}")
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+          echo "Deploying firmware: version=${VERSION}, branch=${BRANCH}"
+          curl -f -X POST "${{ secrets.GOTAPLIST_API_URL }}/ota/upload" \
+            -F "file=@.pio/build/JC8048W550C/firmware.bin" \
+            -F "version=${VERSION}" \
+            -F "branch=${BRANCH}"
