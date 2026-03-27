@@ -242,6 +242,7 @@ static bool downloadLogo(const char* url) {
     HTTPClient http;
     http.setTimeout(5000);
     http.begin(url);
+    Serial.printf("[UI] Downloading logo from: %s\n", url);
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
         Serial.printf("[UI] Download failed: GET %s returned %d\n", url, code);
@@ -250,6 +251,7 @@ static bool downloadLogo(const char* url) {
     }
 
     int len = http.getSize();
+    Serial.printf("[UI] Content-Length: %d bytes\n", len);
     // Add 32 bytes padding to safely inject the dummy JFIF block if needed
     size_t allocSz = ((len > 0) ? (size_t)len : 2500 * 1024) + 32; 
     
