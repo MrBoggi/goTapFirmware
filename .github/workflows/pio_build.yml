@@ -40,7 +40,9 @@ jobs:
 
       - name: Upload Firmware Artifact
         if: success()
+        env:
+          SANITIZED_REF: ${{ github.ref_name }}
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ github.ref_name }}
+          name: firmware-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
           path: .pio/build/JC8048W550C/firmware.bin
