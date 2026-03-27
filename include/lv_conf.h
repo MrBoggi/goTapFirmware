@@ -18,7 +18,12 @@
 /*====================
    Memory
  *====================*/
-#define LV_MEM_SIZE (64 * 1024U)   /* 64 KB for LVGL objects (internal DRAM) */
+#define LV_USE_STDLIB_MALLOC    1
+
+#define LV_USE_STDLIB_STRING    1
+#define LV_USE_STDLIB_SPRINTF   1
+#define LV_USE_FS_MEMFS         1
+#define LV_FS_MEMFS_LETTER     'M'
 
 /*====================
    Font support (Montserrat built-in)
@@ -26,6 +31,8 @@
 #define LV_FONT_MONTSERRAT_14 1
 #define LV_FONT_MONTSERRAT_20 1
 #define LV_FONT_MONTSERRAT_28 1
+#define LV_FONT_MONTSERRAT_32 1
+#define LV_FONT_MONTSERRAT_36 1
 #define LV_FONT_DEFAULT &lv_font_montserrat_14
 
 /*====================
@@ -33,10 +40,13 @@
  *====================*/
 /* LVGL v9: built-in JPEG decoding via tjpgd */
 #define LV_USE_TJPGD    1
-#define LV_USE_PNG      0
-#define LV_USE_BMP      0
-#define LV_USE_GIF      0
+#define LV_USE_PNG      1
+#define LV_USE_BMP      1
+#define LV_USE_GIF      1
 #define LV_USE_QRCODE   0
+
+/* Reserver plass i minnet for at fulle PNG-bilder kan pakkes ut. Dette trengs fordi LodePNG dekoder hele bildebuffere før opptegning, i motsetning til JPEG som tegnes linje for linje. */
+#define LV_CACHE_DEF_SIZE       (4 * 1024 * 1024)   /* 4 MB cache for dekodede bilder */
 
 /*====================
    Widgets
