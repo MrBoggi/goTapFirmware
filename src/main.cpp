@@ -15,14 +15,16 @@
 #include <lvgl.h>
 
 #include "config.h"   // MUST be included before any module that uses its defines
+#include "settings.h"
 #include "wifi_manager.h"
 #include "api_client.h"
 #include "ui.h"
 
 // ------------------------------------------------------------------
-// Timing
+// Timing & State
 // ------------------------------------------------------------------
-static uint32_t g_lastRefreshMs = 0;
+uint32_t g_lastRefreshMs = 0;
+static bool g_isScreenSleeping = false;
 
 // ------------------------------------------------------------------
 // setup
@@ -32,11 +34,20 @@ void setup() {
     delay(500); // let monitor connect
     Serial.println("[Main] goTapFirmware starting...");
 
+    // 0. Init Settings (NVS)
+    settingsInit();
+
     // 1. Display + LVGL (must come before WiFi to show boot message early)
     smartdisplay_init();          // init ST7262 display + GT911 touch
     lv_init();                    // LVGL core init
 
-    Serial.println("[Main] Display initialised");
+    // Set rotation to portrait (270 degrees relative to landscape)
+    lv_display_t* disp = lv_display_get_default();
+    if (disp) {
+        lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_270);
+    }
+
+    Serial.println("[Main] Display initialised (Portrait)");
 
     // 2. WiFi (blocking – restarts if it cannot connect)
     wifiConnect();
@@ -57,6 +68,12 @@ void setup() {
 // loop
 // ------------------------------------------------------------------
 void loop() {
+    // Update LVGL tick
+    static uint32_t lastTick = 0;
+    uint32_t currentTick = millis();
+    lv_tick_inc(currentTick - lastTick);
+    lastTick = currentTick;
+
     // LVGL timer handler – must be called frequently (every few ms)
     lv_timer_handler();
 
@@ -72,4 +89,16 @@ void loop() {
 
     // WiFi reconnect guard
     wifiReconnectIfNeeded();
+
+    // Screen Auto-Sleep Logic (Check every loop)
+    uint32_t inactiveMs = lv_display_get_inactive_time(lv_display_get_default());
+    if (!g_isScreenSleeping && inactiveMs >= DISPLAY_SLEEP_TIMEOUT_MS) {
+        g_isScreenSleeping = true;
+        smartdisplay_lcd_set_backlight(0.0f); // Turn off backlight completely
+        Serial.println("[Main] Screen sleeping due to 30 min inactivity");
+    } else if (g_isScreenSleeping && inactiveMs < DISPLAY_SLEEP_TIMEOUT_MS) {
+        g_isScreenSleeping = false;
+        smartdisplay_lcd_set_backlight(1.0f); // Wake up full brightness
+        Serial.println("[Main] Screen touched, waking up!");
+    }
 }

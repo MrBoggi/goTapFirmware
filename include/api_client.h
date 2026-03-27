@@ -14,6 +14,18 @@
 /** Maximum length for string fields from the API */
 static constexpr uint8_t API_STR_LEN = 128;
 
+#define MAX_TAPS_IN_LIST 10
+
+struct TapInfo {
+    int id;                   ///< Tap ID
+    char name[API_STR_LEN];   ///< Name of the tap
+};
+
+struct TapList {
+    TapInfo taps[MAX_TAPS_IN_LIST];
+    uint8_t count;
+};
+
 /**
  * @brief Data received from GET /api/taps/{tapID}/display
  */
@@ -44,3 +56,10 @@ bool fetchTapDisplay(TapData& out);
  * @return true on success (HTTP 200/201), false otherwise.
  */
 bool postPour(const char* kegId, float liters);
+
+/**
+ * @brief Fetch list of available taps.
+ * @param[out] out  Populated TapList struct on success.
+ * @return true on success, false on HTTP/parse error.
+ */
+bool fetchTapsList(TapList& out);
