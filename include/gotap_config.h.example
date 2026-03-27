@@ -5,34 +5,26 @@
 
 // ==========================================
 // WiFi Settings
-// Note: WIFI_SSID / WIFI_PASSWORD are reserved by ESP-IDF internals,
-//       so we prefix with GOTAP_ to avoid linker conflicts.
 // ==========================================
-#define GOTAP_WIFI_SSID     "YOUR_WIFI_SSID"
-#define GOTAP_WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define GOTAP_WIFI_SSID     "YOUR_SSID"
+#define GOTAP_WIFI_PASSWORD "YOUR_PASSWORD"
 
 // ==========================================
-// goTapList API Settings
+// API Settings
 // ==========================================
-// Base URL for the goTapList backend API (no trailing slash)
-#define API_BASE_URL "http://192.168.10.115:18080/api"
+#define API_BASE_URL "http://192.168.1.100:18080/api"
+#define TAP_ID "1"
 
 // ==========================================
-// Device Settings
+// Display Settings
 // ==========================================
-// Unique ID for the kran (tap) this ESP32 is physically attached to.
-// This matches the tap ID/slug in your goTapList dashboard.
-#define TAP_ID "tap-01"
-
-// Keg ID – now fetched dynamically from the API based on TAP_ID.
-
-// How often (ms) to refresh tap data from the API
 #define DISPLAY_REFRESH_INTERVAL_MS 60000
-
-// HTTP request timeout (ms)
+#define DISPLAY_SLEEP_TIMEOUT_MS (30 * 60 * 1000)
 #define HTTP_TIMEOUT_MS 5000
 
-// Default OTA branch (usually "main" or "development")
+// ==========================================
+// OTA Settings
+// ==========================================
 #define OTA_DEFAULT_BRANCH "main"
 
-#endif // CONFIG_H
+#endif // GOTAP_CONFIG_H
