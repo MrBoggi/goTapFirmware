@@ -1,5 +1,5 @@
 #include "settings.h"
-#include "config.h"
+#include "gotap_config.h"
 #include <Preferences.h>
 #include <Arduino.h>
 

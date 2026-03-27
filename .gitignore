@@ -9,7 +9,7 @@ node_modules/
 dist/
 
 # Configuration files with secrets
-config.h
+gotap_config.h
 credentials.h
 
 # Compiled objects

@@ -14,7 +14,7 @@
 #include <esp32_smartdisplay.h>  // Handles ST7262 + GT911 for JC8048W550
 #include <lvgl.h>
 
-#include "config.h"   // MUST be included before any module that uses its defines
+#include "gotap_config.h"   // MUST be included before any module that uses its defines
 #include "settings.h"
 #include "wifi_manager.h"
 #include "api_client.h"

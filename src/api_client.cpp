@@ -4,7 +4,7 @@
  */
 
 #include "api_client.h"
-#include "config.h"
+#include "gotap_config.h"
 #include "settings.h"
 
 #include <Arduino.h>
