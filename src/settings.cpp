@@ -3,6 +3,10 @@
 #include <Preferences.h>
 #include <Arduino.h>
 
+#ifndef OTA_DEFAULT_BRANCH
+#define OTA_DEFAULT_BRANCH "main"
+#endif
+
 static Preferences preferences;
 static char g_activeTapId[32] = {0};
 static char g_targetBranch[32] = {0};
@@ -13,7 +17,7 @@ void settingsInit() {
     String savedId = preferences.getString("tapId", TAP_ID);
     strlcpy(g_activeTapId, savedId.c_str(), sizeof(g_activeTapId));
 
-    String savedBranch = preferences.getString("branch", "main");
+    String savedBranch = preferences.getString("branch", OTA_DEFAULT_BRANCH);
     strlcpy(g_targetBranch, savedBranch.c_str(), sizeof(g_targetBranch));
     
     Serial.printf("[Settings] Active Tap ID: %s (Default in config: %s)\n", g_activeTapId, TAP_ID);

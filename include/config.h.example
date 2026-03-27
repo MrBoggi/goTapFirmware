@@ -32,4 +32,7 @@
 // HTTP request timeout (ms)
 #define HTTP_TIMEOUT_MS 5000
 
+// Default OTA branch (usually "main" or "development")
+#define OTA_DEFAULT_BRANCH "main"
+
 #endif // CONFIG_H
