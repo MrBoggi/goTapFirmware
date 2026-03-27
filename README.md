@@ -23,6 +23,22 @@ Konfigurasjon skjer per enhet:
 2. Fyll ut dine egne nettverksinnstillinger (WiFi SSID/Passord), goTapList base-URL, og sett spesifikk `TAP_ID` for enheten.
 3. Bygg og upload koden ved bruk av PlatformIO IDE i VS Code eller PlatformIO Core (CLI).
 
+## CI/CD & Utviklingsflyt
+
+Prosjektet bruker **GitHub Actions** for å sikre kodekvalitet og automatisere bygg:
+
+- **build (push)**: Kjører hver gang du pusher kode direkte til en branch. Dette verifiserer at koden i branchen din faktisk kompilerer for ESP32-S3.
+- **build (pull_request)**: Kjører når en Pull Request åpnes eller oppdateres. Denne jobben simulerer hvordan koden vil se ut *etter* en merge inn i mål-branchen (`main` eller `development`). Dette fanger opp merge-konflikter eller feil som bare oppstår i kombinasjon med den nyeste koden i mål-branchen.
+
+### Automatisk firmware-bygg
+Når kode merges inn i `main` eller `development`, vil GitHub Actions automatisk generere en ny `firmware.bin`. Denne filen lastes opp som en **GitHub Artifact**, og kan brukes til OTA-oppdateringer.
+
+## OTA-oppdateringer (Over-The-Air)
+
+Enhetene sjekker etter oppdateringer nattlig (kl 03:00) eller ved oppstart.
+- **OTA_DEFAULT_BRANCH**: Settes i `config.h`. Bestemmer om enheten skal se etter `stable` (`main`) eller `latest` (`development`) firmware.
+- **Omstart**: Du kan trigge en manuell OTA-sjekk ved å bruke "Omstart"-knappen i innstillingsmenyen på enheten.
+
 ## Relaterte linker
 - Backend API: [goTapList](https://github.com/MrBoggi/goTapList)
 - Frontend: [goTOVGUI](https://github.com/MrBoggi/goTOVGUI)
