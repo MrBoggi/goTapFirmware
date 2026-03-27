@@ -18,13 +18,39 @@
 #include "settings.h"
 #include "wifi_manager.h"
 #include "api_client.h"
+#include "ota_manager.h"
 #include "ui.h"
+#include <time.h>
 
 // ------------------------------------------------------------------
 // Timing & State
 // ------------------------------------------------------------------
 uint32_t g_lastRefreshMs = 0;
 static bool g_isScreenSleeping = false;
+static int  g_lastOtaCheckHour = -1;
+
+// ------------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------------
+void checkAndApplyUpdates() {
+    Serial.println("[Main] Checking for OTA updates...");
+    
+    OtaUpdateInfo info;
+    const char* currentVer = GOTAP_VERSION;
+    const char* branch = settingsGetTargetBranch();
+
+    if (fetchOtaUpdateInfo(currentVer, branch, info)) {
+        if (info.updateAvailable) {
+            Serial.printf("[Main] Update available: %s. Downloading from %s...\n", info.version, info.url);
+            // This call is blocking and will restart the ESP on success
+            otaPerformUpdate(info.url);
+        } else {
+            Serial.println("[Main] No update available");
+        }
+    } else {
+        Serial.println("[Main] OTA info fetch failed");
+    }
+}
 
 // ------------------------------------------------------------------
 // setup
@@ -60,6 +86,9 @@ void setup() {
     fetchTapDisplay(data);
     uiShowIdle(data);
 
+    // 5. Initial OTA check
+    checkAndApplyUpdates();
+
     g_lastRefreshMs = millis();
     Serial.println("[Main] Setup complete");
 }
@@ -84,6 +113,17 @@ void loop() {
         TapData data;
         if (fetchTapDisplay(data)) {
             uiShowIdle(data);
+        }
+    }
+
+    // Scheduled OTA check (Every day at 03:00)
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+        if (timeinfo.tm_hour == 3 && g_lastOtaCheckHour != 3) {
+            g_lastOtaCheckHour = 3;
+            checkAndApplyUpdates();
+        } else if (timeinfo.tm_hour != 3) {
+            g_lastOtaCheckHour = timeinfo.tm_hour;
         }
     }
 

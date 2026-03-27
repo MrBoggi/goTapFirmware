@@ -153,3 +153,40 @@ bool fetchTapsList(TapList& out) {
     Serial.printf("[API] Fetched %d taps\n", out.count);
     return true;
 }
+
+bool fetchOtaUpdateInfo(const char* currentVersion, const char* targetBranch, OtaUpdateInfo& out) {
+    out.updateAvailable = false;
+    out.version[0] = '\0';
+    out.url[0] = '\0';
+
+    char url[512];
+    snprintf(url, sizeof(url), "%s/ota/check?tap_id=%s&current_version=%s&branch=%s", 
+             API_BASE_URL, settingsGetTapId(), currentVersion, targetBranch);
+
+    String body;
+    if (!httpGet(url, body)) {
+        return false;
+    }
+
+    JsonDocument doc;
+    DeserializationError err = deserializeJson(doc, body);
+    if (err) {
+        Serial.printf("[API] OTA check JSON parse error: %s\n", err.c_str());
+        return false;
+    }
+
+    out.updateAvailable = doc["updateAvailable"] | false;
+    if (out.updateAvailable) {
+        strlcpy(out.version, doc["version"] | "", sizeof(out.version));
+        strlcpy(out.url,     doc["url"]     | "", sizeof(out.url));
+        
+        // Ensure URL is absolute (prepend base URL if it's relative)
+        if (out.url[0] == '/') {
+            char fullUrl[512];
+            snprintf(fullUrl, sizeof(fullUrl), "%s%s", API_BASE_URL, out.url);
+            strlcpy(out.url, fullUrl, sizeof(out.url));
+        }
+    }
+
+    return true;
+}

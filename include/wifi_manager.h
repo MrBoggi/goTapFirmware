@@ -19,3 +19,8 @@ void wifiConnect();
  *        Non-blocking – call every loop iteration.
  */
 void wifiReconnectIfNeeded();
+
+/**
+ * @brief Sync internal clock with NTP.
+ */
+void syncTime();

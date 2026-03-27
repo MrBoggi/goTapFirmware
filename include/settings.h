@@ -16,6 +16,16 @@ void settingsInit();
 const char* settingsGetTapId();
 
 /**
+ * @brief Henter gjeldende OTA-branch (main, dev, etc).
+ */
+const char* settingsGetTargetBranch();
+
+/**
  * @brief Lagre ny tapId i NVS.
  */
 void settingsSetTapId(const char* tapId);
+
+/**
+ * @brief Lagre ny OTA-branch i NVS.
+ */
+void settingsSetTargetBranch(const char* branch);
