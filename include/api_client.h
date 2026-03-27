@@ -38,6 +38,15 @@ struct TapData {
     bool  isEmpty;               ///< True when tap has no beer (204 response)
 };
 
+/**
+ * @brief OTA Update Info from GET /api/ota/check
+ */
+struct OtaUpdateInfo {
+    bool updateAvailable;
+    char version[16];
+    char url[256];
+};
+
 // -------------------------------------------------------------------
 // API functions
 // -------------------------------------------------------------------
@@ -63,3 +72,12 @@ bool postPour(const char* kegId, float liters);
  * @return true on success, false on HTTP/parse error.
  */
 bool fetchTapsList(TapList& out);
+
+/**
+ * @brief Check for OTA update.
+ * @param currentVersion  The current firmware version (e.g. 1.0.0).
+ * @param targetBranch    The branch to look for (main, dev, etc).
+ * @param[out] out        Populated OtaUpdateInfo struct.
+ * @return true on success (even if no update available), false on error.
+ */
+bool fetchOtaUpdateInfo(const char* currentVersion, const char* targetBranch, OtaUpdateInfo& out);
