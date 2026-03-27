@@ -1,0 +1,30 @@
+#pragma once
+
+#ifndef GOTAP_CONFIG_H
+#define GOTAP_CONFIG_H
+
+// ==========================================
+// WiFi Settings
+// ==========================================
+#define GOTAP_WIFI_SSID     "YOUR_SSID"
+#define GOTAP_WIFI_PASSWORD "YOUR_PASSWORD"
+
+// ==========================================
+// API Settings
+// ==========================================
+#define API_BASE_URL "http://192.168.1.100:18080/api"
+#define TAP_ID "1"
+
+// ==========================================
+// Display Settings
+// ==========================================
+#define DISPLAY_REFRESH_INTERVAL_MS 60000
+#define DISPLAY_SLEEP_TIMEOUT_MS (30 * 60 * 1000)
+#define HTTP_TIMEOUT_MS 5000
+
+// ==========================================
+// OTA Settings
+// ==========================================
+#define OTA_DEFAULT_BRANCH "main"
+
+#endif // GOTAP_CONFIG_H

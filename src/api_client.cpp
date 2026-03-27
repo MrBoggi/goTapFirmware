@@ -4,7 +4,7 @@
  */
 
 #include "api_client.h"
-#include "config.h"
+#include "gotap_config.h"
 #include "settings.h"
 
 #include <Arduino.h>
@@ -26,9 +26,12 @@ static bool httpGet(const char* url, String& responseBody) {
     http.setTimeout(HTTP_TIMEOUT_MS);
     http.begin(url);
 
+    Serial.printf("[API] GET %s\n", url); // Log the URL being requested
+
     int code = http.GET();
     if (code == HTTP_CODE_NO_CONTENT) {
         // 204 – no beer on tap
+        Serial.printf("[API] GET %s returned %d (No Content)\n", url, code);
         http.end();
         return false;
     }
@@ -67,28 +70,30 @@ bool fetchTapDisplay(TapData& out) {
         return false;
     }
 
-    // Populate struct – use strlcpy to stay within buffer bounds
+    // Populate struct – use camelCase to match backend (Issue #6 / development branch sync)
     strlcpy(out.beerName,       doc["beerName"]   | "",   sizeof(out.beerName));
+    out.abv              = doc["beerAbv"]         | 0.0f;
+    out.remainingLiters  = doc["volumeLeft"]      | 0.0f;
     
-    // Logo fallback: if "beerLogo" is missing but "beerId" exists, construct the URL (like goTOVGUI)
-    const char* logo = doc["beerLogo"] | "";
-    if (logo[0] == '\0' && !doc["beerId"].isNull()) {
-        snprintf(out.logoUrl, sizeof(out.logoUrl), "%s/beers/%d/logo", API_BASE_URL, doc["beerId"].as<int>());
+    // Construct keg ID as string (it's an int in the JSON)
+    if (!doc["kegId"].isNull()) {
+        snprintf(out.kegId, sizeof(out.kegId), "%d", doc["kegId"].as<int>());
     } else {
-        strlcpy(out.logoUrl, logo, sizeof(out.logoUrl));
+        out.kegId[0] = '\0';
     }
 
-    if (out.logoUrl[0] != '\0') {
-        Serial.printf("[API] Logo URL: %s\n", out.logoUrl);
+    // Construct hardware-optimized logo URL: /api/beers/{id}/logo/display
+    // The optimized endpoint returns 300x300 JPEG for memory-efficient tjpgd decoding.
+    int beerId = doc["beerId"] | 0;
+    if (beerId > 0) {
+        snprintf(out.logoUrl, sizeof(out.logoUrl), "%s/beers/%d/logo/display", API_BASE_URL, beerId);
+    } else {
+        out.logoUrl[0] = '\0';
     }
 
-    strlcpy(out.kegId,          doc["kegId"].as<String>().c_str(), sizeof(out.kegId));
-    out.abv              = doc["beerAbv"]          | 0.0f;
-    out.remainingLiters  = doc["volumeLeft"]       | 0.0f;
-    out.isEmpty          = false;
-
-    Serial.printf("[API] Tap data: %s (%.1f%% ABV, %.1f L left)\n",
-                  out.beerName, out.abv, out.remainingLiters);
+    out.isEmpty = false;
+    Serial.printf("[API] Tap data: %s (%.1f%% ABV, %.1f L left)\n", out.beerName, out.abv, out.remainingLiters);
+    Serial.printf("[API] Final Logo URL: %s\n", out.logoUrl);
     return true;
 }
 
@@ -159,9 +164,16 @@ bool fetchOtaUpdateInfo(const char* currentVersion, const char* targetBranch, Ot
     out.version[0] = '\0';
     out.url[0] = '\0';
 
+    char vStr[20];
+    if (currentVersion[0] != 'v') {
+        snprintf(vStr, sizeof(vStr), "v%s", currentVersion);
+    } else {
+        strlcpy(vStr, currentVersion, sizeof(vStr));
+    }
+
     char url[512];
-    snprintf(url, sizeof(url), "%s/ota/check?tap_id=%s&current_version=%s&branch=%s", 
-             API_BASE_URL, settingsGetTapId(), currentVersion, targetBranch);
+    snprintf(url, sizeof(url), "%s/ota/check?tap_id=%s&version=%s&branch=%s", 
+             API_BASE_URL, settingsGetTapId(), vStr, targetBranch);
 
     String body;
     if (!httpGet(url, body)) {

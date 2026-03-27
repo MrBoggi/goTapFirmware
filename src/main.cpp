@@ -14,7 +14,7 @@
 #include <esp32_smartdisplay.h>  // Handles ST7262 + GT911 for JC8048W550
 #include <lvgl.h>
 
-#include "config.h"   // MUST be included before any module that uses its defines
+#include "gotap_config.h"   // MUST be included before any module that uses its defines
 #include "settings.h"
 #include "wifi_manager.h"
 #include "api_client.h"
@@ -116,15 +116,27 @@ void loop() {
         }
     }
 
-    // Scheduled OTA check (Every day at 03:00)
+    // Scheduled OTA check (Every day at 03:00 with 0-15 min random delay)
+    static uint32_t otaTargetMs = 0;
+    static bool otaPending = false;
+
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
         if (timeinfo.tm_hour == 3 && g_lastOtaCheckHour != 3) {
             g_lastOtaCheckHour = 3;
-            checkAndApplyUpdates();
+            // Set a random delay between 0 and 15 minutes (900,000 ms)
+            uint32_t delayMs = random(0, 900001); 
+            otaTargetMs = millis() + delayMs;
+            otaPending = true;
+            Serial.printf("[Main] 03:00 detected. Scheduling OTA check in %d seconds...\n", delayMs / 1000);
         } else if (timeinfo.tm_hour != 3) {
             g_lastOtaCheckHour = timeinfo.tm_hour;
         }
+    }
+
+    if (otaPending && millis() >= otaTargetMs) {
+        otaPending = false;
+        checkAndApplyUpdates();
     }
 
     // WiFi reconnect guard

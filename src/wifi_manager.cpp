@@ -4,7 +4,7 @@
  */
 
 #include "wifi_manager.h"
-#include "config.h"
+#include "gotap_config.h"
 
 
 #include <Arduino.h>

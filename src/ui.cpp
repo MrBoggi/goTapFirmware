@@ -13,6 +13,10 @@
 #include "settings.h"
 
 #include <Arduino.h>
+
+#ifndef OTA_DEFAULT_BRANCH
+#define OTA_DEFAULT_BRANCH "main"
+#endif
 #include <lvgl.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
@@ -67,6 +71,7 @@ static void cancelBtnCb(lv_event_t* e);
 static void settingsBtnCb(lv_event_t* e);
 static void tapSelectedCb(lv_event_t* e);
 static void cancelConfigBtnCb(lv_event_t* e);
+static void rebootBtnCb(lv_event_t* e);
 static void confirmTimerCb(lv_timer_t* t);
 static bool downloadLogo(const char* url);
 
@@ -242,11 +247,16 @@ static bool downloadLogo(const char* url) {
     HTTPClient http;
     http.setTimeout(5000);
     http.begin(url);
+    Serial.printf("[UI] Downloading logo from: %s\n", url);
     int code = http.GET();
-    Serial.printf("[UI] Downloading logo from: %s (Code: %d)\n", url, code);
-    if (code != HTTP_CODE_OK) { http.end(); return false; }
+    if (code != HTTP_CODE_OK) {
+        Serial.printf("[UI] Download failed: GET %s returned %d\n", url, code);
+        http.end();
+        return false;
+    }
 
     int len = http.getSize();
+    Serial.printf("[UI] Content-Length: %d bytes\n", len);
     // Add 32 bytes padding to safely inject the dummy JFIF block if needed
     size_t allocSz = ((len > 0) ? (size_t)len : 2500 * 1024) + 32; 
     
@@ -474,11 +484,34 @@ static void buildConfigScreen() {
     lv_obj_set_style_pad_column(g_tapListContainer, 15, 0);
     lv_obj_set_flex_align(g_tapListContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 
-    // Bare avbryt-knapp trengs nå
+    // Knapper på bunnen (Reboot + Avbryt)
+    lv_obj_t* footer = lv_obj_create(g_screenConfig);
+    lv_obj_set_size(footer, 440, 100);
+    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_style_bg_opa(footer, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(footer, 0, 0);
+    lv_obj_set_flex_flow(footer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(footer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(footer, 20, 0);
+
     int btnW = 180, btnH = 80;
-    lv_obj_t* cancelBtn = lv_button_create(g_screenConfig);
+
+    // Omstart-knapp
+    lv_obj_t* rebootBtn = lv_button_create(footer);
+    lv_obj_set_size(rebootBtn, btnW, btnH);
+    lv_obj_set_style_bg_color(rebootBtn, COL_ACCENT, 0);
+    lv_obj_set_style_radius(rebootBtn, 12, 0);
+    lv_obj_add_event_cb(rebootBtn, rebootBtnCb, LV_EVENT_CLICKED, nullptr);
+
+    lv_obj_t* rebootLbl = lv_label_create(rebootBtn);
+    lv_label_set_text(rebootLbl, "Omstart");
+    lv_obj_set_style_text_font(rebootLbl, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(rebootLbl, COL_WHITE, 0);
+    lv_obj_center(rebootLbl);
+
+    // Avbryt-knapp
+    lv_obj_t* cancelBtn = lv_button_create(footer);
     lv_obj_set_size(cancelBtn, btnW, btnH);
-    lv_obj_align(cancelBtn, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_style_bg_color(cancelBtn, COL_CANCEL, 0);
     lv_obj_set_style_radius(cancelBtn, 12, 0);
     lv_obj_add_event_cb(cancelBtn, cancelConfigBtnCb, LV_EVENT_CLICKED, nullptr);
@@ -586,4 +619,11 @@ static void settingsBtnCb(lv_event_t* e) {
 static void cancelConfigBtnCb(lv_event_t* e) {
     (void)e;
     lv_screen_load_anim(g_screenIdle, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 200, 0, false);
+}
+
+static void rebootBtnCb(lv_event_t* e) {
+    (void)e;
+    Serial.println("[UI] Rebooting requested...");
+    delay(100);
+    ESP.restart();
 }

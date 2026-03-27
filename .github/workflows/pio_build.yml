@@ -1,0 +1,48 @@
+name: PlatformIO Build & Deploy
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Create config from template
+        run: cp include/gotap_config.h.example include/gotap_config.h
+
+      - name: Install dependencies
+        run: pio pkg install -e JC8048W550C
+
+      - name: Patch LVGL for Xtensa (stub ARM-only assembler)
+        run: |
+          # LVGL 9.2 ships ARM Helium/Neon .S files that fail on Xtensa.
+          # Replace them with empty stubs so the assembler has nothing to reject.
+          find . ~/.platformio -name "lv_blend_helium.S" -exec sh -c 'echo "/* stubbed for Xtensa */" > "$1"' _ {} \; 2>/dev/null || true
+          find . ~/.platformio -name "lv_blend_neon.S"   -exec sh -c 'echo "/* stubbed for Xtensa */" > "$1"' _ {} \; 2>/dev/null || true
+
+      - name: Build firmware
+        run: pio run -e JC8048W550C
+
+      - name: Upload Firmware Artifact
+        if: success()
+        env:
+          SANITIZED_REF: ${{ github.ref_name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+          path: .pio/build/JC8048W550C/firmware.bin
