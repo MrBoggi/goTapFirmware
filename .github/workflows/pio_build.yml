@@ -57,10 +57,13 @@ jobs:
           YEAR=$(date +%Y)
           MONTH=$(date +%m)
 
-          # Get commit count since last tag for version component
-          if git describe --tags --always --long >/dev/null 2>&1; then
-            COMMIT_COUNT=$(git describe --tags --always --long | sed 's/.*-\([0-9]*\)-g.*/\1/')
+          # Get commit count since last tag (not including the tag itself)
+          # If no tags exist, count all commits
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            # Tags exist - count commits since last tag
+            COMMIT_COUNT=$(git rev-list $(git describe --tags --abbrev=0)..HEAD --count 2>/dev/null || echo "0")
           else
+            # No tags - count all commits
             COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "0")
           fi
 
