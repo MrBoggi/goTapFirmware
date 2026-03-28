@@ -32,23 +32,28 @@ def get_git_branch():
         return "unknown"
 
 def get_commit_count_since_tag():
-    """Get commit count since last tag using git describe."""
+    """Get commit count since last tag (not including the tag itself).
+    
+    If no tags exist, count all commits from the beginning.
+    """
     try:
-        # --long ensures we always get commit count even if we're exactly on a tag
-        # Format: TAG-N-HASH (e.g., v2026.03.0-5-g1234567)
+        # First, check if any tags exist
         result = subprocess.run(
-            ["git", "describe", "--tags", "--always", "--long"],
+            ["git", "describe", "--tags", "--abbrev=0"],
             capture_output=True,
             text=True,
             check=True
         )
-        output = result.stdout.strip()
+        last_tag = result.stdout.strip()
         
-        # Parse the output to get commit count
-        parts = output.split("-")
-        if len(parts) >= 2 and parts[-2].isdigit():
-            return parts[-2]  # Commit count
-        return "0"
+        # Count commits since last tag
+        result = subprocess.run(
+            ["git", "rev-list", f"{last_tag}..HEAD", "--count"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip()
     except subprocess.CalledProcessError:
         # No tags exist, count all commits
         try:
