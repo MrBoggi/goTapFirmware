@@ -113,9 +113,6 @@ def main():
         is_platformio = False
     
     if is_platformio:
-        # Export version to PlatformIO environment for use in build_flags
-        env.Append(BUILD_FLAGS=[f"-D GOTAP_VERSION=\"{version}\""])  # noqa: F821
-        
         # Get include directory from PlatformIO
         include_dir = os.path.join(env.subst("$PROJECT_DIR"), "include")  # noqa: F821
     else:
