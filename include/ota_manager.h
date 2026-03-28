@@ -8,11 +8,6 @@
 #include <Arduino.h>
 
 /**
- * @brief Current firmware version.
- */
-#define GOTAP_VERSION "1.1.0"
-
-/**
  * @brief Check for and perform an update if available.
  * @param updateUrl The direct URL to the .bin file.
  * @return True if update sequence started, false otherwise.
