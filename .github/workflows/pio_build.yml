@@ -25,6 +25,9 @@ jobs:
       - name: Create config from template
         run: cp include/gotap_config.h.example include/gotap_config.h
 
+      - name: Generate version.h
+        run: python scripts/version_gen.py
+
       - name: Install dependencies
         run: pio pkg install -e JC8048W550C
 
