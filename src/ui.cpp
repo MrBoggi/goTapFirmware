@@ -36,6 +36,10 @@ static lv_obj_t* g_tapListContainer = nullptr;
 static lv_obj_t* g_btnMain = nullptr;
 static lv_obj_t* g_btnDev = nullptr;
 
+// Idle screen elements for issue #9
+static lv_obj_t* g_labelTapTitle = nullptr;
+static lv_obj_t* g_iconBranch = nullptr;
+
 extern uint32_t g_lastRefreshMs;
 
 // Idle-screen widgets
@@ -104,6 +108,22 @@ void uiInit() {
 
 void uiShowIdle(const TapData& data) {
     memcpy(&g_currentData, &data, sizeof(TapData));
+
+    // Oppdater overskrift med kran-nummer (issue #9)
+    char titleBuf[32];
+    const char* tapId = settingsGetTapId();
+    snprintf(titleBuf, sizeof(titleBuf), "Kran %s", tapId);
+    lv_label_set_text(g_labelTapTitle, titleBuf);
+
+    // Oppdater branch-ikon (issue #9)
+    const char* branch = settingsGetTargetBranch();
+    if (strcmp(branch, "development") == 0) {
+        lv_label_set_text(g_iconBranch, LV_SYMBOL_WARNING " DEV");
+        lv_obj_set_style_text_color(g_iconBranch, lv_color_make(0xF3, 0x9C, 0x12), 0);
+    } else {
+        lv_label_set_text(g_iconBranch, LV_SYMBOL_OK " MAIN");
+        lv_obj_set_style_text_color(g_iconBranch, lv_color_make(0x2E, 0xCC, 0x71), 0);
+    }
 
     if (data.isEmpty) {
         lv_obj_add_flag(g_logoContainer, LV_OBJ_FLAG_HIDDEN);
@@ -364,6 +384,31 @@ static void buildIdleScreen() {
     lv_obj_set_size(g_spinnerLoad, 80, 80);
     lv_obj_center(g_spinnerLoad);
     lv_obj_add_flag(g_spinnerLoad, LV_OBJ_FLAG_HIDDEN);
+
+    // --- Issue #9: Overskrift med kran-navn og branch-ikon ---
+    // Overskrift (topp, sentrert)
+    g_labelTapTitle = lv_label_create(g_screenIdle);
+    lv_label_set_text(g_labelTapTitle, "Kran 2");
+    lv_obj_set_style_text_font(g_labelTapTitle, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(g_labelTapTitle, COL_ACCENT, 0);
+    lv_obj_align(g_labelTapTitle, LV_ALIGN_TOP_MID, 0, 15);
+
+    // Branch-ikon (venstre side, ved overskrift)
+    g_iconBranch = lv_label_create(g_screenIdle);
+    const char* branch = settingsGetTargetBranch();
+    if (strcmp(branch, "development") == 0) {
+        lv_label_set_text(g_iconBranch, LV_SYMBOL_WARNING " DEV");  // Advarsel-ikon for dev
+    } else {
+        lv_label_set_text(g_iconBranch, LV_SYMBOL_OK " MAIN");      // Hake-ikon for main
+    }
+    lv_obj_set_style_text_font(g_iconBranch, &lv_font_montserrat_20, 0);
+    if (strcmp(branch, "development") == 0) {
+        lv_obj_set_style_text_color(g_iconBranch, lv_color_make(0xF3, 0x9C, 0x12), 0);  // Oransje for dev
+    } else {
+        lv_obj_set_style_text_color(g_iconBranch, lv_color_make(0x2E, 0xCC, 0x71), 0);  // Grønn for main
+    }
+    lv_obj_align(g_iconBranch, LV_ALIGN_TOP_LEFT, 15, 20);
+    // --- Slutt issue #9 ---
 
     g_logoContainer = lv_obj_create(g_screenIdle);
     lv_obj_set_size(g_logoContainer, 300, 300);
