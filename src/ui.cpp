@@ -560,8 +560,6 @@ static void buildConfigScreen() {
     lv_obj_set_flex_align(footer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(footer, 20, 0);
 
-    int btnW = 180, btnH = 80;
-
     // Omstart-knapp
     lv_obj_t* rebootBtn = lv_button_create(footer);
     lv_obj_set_size(rebootBtn, btnW, btnH);
