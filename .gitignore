@@ -12,6 +12,9 @@ dist/
 include/gotap_config.h
 credentials.h
 
+# Auto-generated version header
+include/version.h
+
 # Compiled objects
 *.o
 *.a

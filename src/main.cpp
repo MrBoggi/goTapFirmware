@@ -15,6 +15,7 @@
 #include <lvgl.h>
 
 #include "gotap_config.h"   // MUST be included before any module that uses its defines
+#include "version.h"        // Auto-generated firmware version
 #include "settings.h"
 #include "wifi_manager.h"
 #include "api_client.h"

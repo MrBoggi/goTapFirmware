@@ -2,9 +2,9 @@ name: PlatformIO Build & Deploy
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ main, development ]
+    branches: [main, development]
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install PlatformIO
         run: pip install --upgrade platformio
@@ -49,11 +49,26 @@ jobs:
         if: success() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development')
         run: |
           BRANCH="${GITHUB_REF_NAME}"
-          if [ "$BRANCH" = "main" ]; then
-            VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-${GITHUB_SHA::7}")
+
+          # Generate version in yyyy.mm.vv format
+          YEAR=$(date +%Y)
+          MONTH=$(date +%m)
+
+          # Get commit count since last tag for version component
+          if git describe --tags --always --long >/dev/null 2>&1; then
+            COMMIT_COUNT=$(git describe --tags --always --long | sed 's/.*-\([0-9]*\)-g.*/\1/')
           else
-            VERSION="dev-${GITHUB_SHA::7}"
+            COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "0")
           fi
+
+          # Build version string
+          VERSION="${YEAR}.${MONTH}.${COMMIT_COUNT}"
+
+          # Add -dev suffix for development branch
+          if [ "$BRANCH" = "development" ]; then
+            VERSION="${VERSION}-dev"
+          fi
+
           echo "Deploying firmware: version=${VERSION}, branch=${BRANCH}"
           curl -f -X POST "${{ secrets.GOTAPLIST_API_URL }}/ota/upload" \
             -F "file=@.pio/build/JC8048W550C/firmware.bin" \

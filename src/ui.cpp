@@ -11,6 +11,7 @@
 #include "ui.h"
 #include "api_client.h"
 #include "settings.h"
+#include "version.h"
 
 #include <Arduino.h>
 
@@ -483,6 +484,15 @@ static void buildConfigScreen() {
     lv_obj_set_style_pad_row(g_tapListContainer, 15, 0);
     lv_obj_set_style_pad_column(g_tapListContainer, 15, 0);
     lv_obj_set_flex_align(g_tapListContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
+    // Versjonslabel nederst på skjermen
+    lv_obj_t* versionLbl = lv_label_create(g_screenConfig);
+    char versionBuf[32];
+    snprintf(versionBuf, sizeof(versionBuf), "Firmware: %s", GOTAP_VERSION);
+    lv_label_set_text(versionLbl, versionBuf);
+    lv_obj_set_style_text_font(versionLbl, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(versionLbl, COL_GREY, 0);
+    lv_obj_align(versionLbl, LV_ALIGN_BOTTOM_MID, 0, -15);
 
     // Knapper på bunnen (Reboot + Avbryt)
     lv_obj_t* footer = lv_obj_create(g_screenConfig);
