@@ -207,7 +207,8 @@ bool updateTapBranch(const char* tapId, const char* branch) {
     if (!tapId || !branch) return false;
 
     char url[256];
-    snprintf(url, sizeof(url), "%s/api/taps/%s/branch", API_BASE_URL, tapId);
+    // API_BASE_URL already includes /api, so we use /taps/{id}/branch directly
+    snprintf(url, sizeof(url), "%s/taps/%s/branch", API_BASE_URL, tapId);
 
     // Build JSON body manually (no need for ArduinoJson here)
     char jsonBody[64];
