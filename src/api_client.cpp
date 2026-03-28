@@ -202,3 +202,30 @@ bool fetchOtaUpdateInfo(const char* currentVersion, const char* targetBranch, Ot
 
     return true;
 }
+
+bool updateTapBranch(const char* tapId, const char* branch) {
+    if (!tapId || !branch) return false;
+
+    char url[256];
+    snprintf(url, sizeof(url), "%s/api/taps/%s/branch", API_BASE_URL, tapId);
+
+    // Build JSON body manually (no need for ArduinoJson here)
+    char jsonBody[64];
+    snprintf(jsonBody, sizeof(jsonBody), "{\"targetBranch\":\"%s\"}", branch);
+
+    HTTPClient http;
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+
+    int httpCode = http.PUT(jsonBody);
+    bool success = (httpCode == 204 || httpCode == 200);
+
+    if (success) {
+        Serial.printf("[API] PUT %s - Branch updated to %s\n", url, branch);
+    } else {
+        Serial.printf("[API] PUT %s - Failed: %d\n", url, httpCode);
+    }
+
+    http.end();
+    return success;
+}
