@@ -14,6 +14,7 @@
 #include "version.h"
 
 #include <Arduino.h>
+#include <cstring>
 
 #ifndef OTA_DEFAULT_BRANCH
 #define OTA_DEFAULT_BRANCH "main"
@@ -32,6 +33,8 @@ static TapData   g_currentData = {};
 static TapList   g_tapList     = {};
 
 static lv_obj_t* g_tapListContainer = nullptr;
+static lv_obj_t* g_btnMain = nullptr;
+static lv_obj_t* g_btnDev = nullptr;
 
 extern uint32_t g_lastRefreshMs;
 
@@ -73,6 +76,8 @@ static void settingsBtnCb(lv_event_t* e);
 static void tapSelectedCb(lv_event_t* e);
 static void cancelConfigBtnCb(lv_event_t* e);
 static void rebootBtnCb(lv_event_t* e);
+static void branchMainCb(lv_event_t* e);
+static void branchDevCb(lv_event_t* e);
 static void confirmTimerCb(lv_timer_t* t);
 static bool downloadLogo(const char* url);
 
@@ -494,6 +499,57 @@ static void buildConfigScreen() {
     lv_obj_set_style_text_color(versionLbl, COL_GREY, 0);
     lv_obj_align(versionLbl, LV_ALIGN_BOTTOM_MID, 0, -15);
 
+    // Branch-velger knapper (over footer)
+    lv_obj_t* branchContainer = lv_obj_create(g_screenConfig);
+    lv_obj_set_size(branchContainer, 440, 100);
+    lv_obj_align(branchContainer, LV_ALIGN_BOTTOM_MID, 0, -110);
+    lv_obj_set_style_bg_opa(branchContainer, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(branchContainer, 0, 0);
+    lv_obj_set_flex_flow(branchContainer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(branchContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(branchContainer, 20, 0);
+
+    int btnW = 180, btnH = 80;
+    const char* currentBranch = settingsGetTargetBranch();
+
+    // Main-knapp
+    g_btnMain = lv_button_create(branchContainer);
+    lv_obj_set_size(g_btnMain, btnW, btnH);
+    lv_obj_set_style_radius(g_btnMain, 12, 0);
+    lv_obj_add_event_cb(g_btnMain, branchMainCb, LV_EVENT_CLICKED, nullptr);
+
+    // Highlight hvis main er valgt
+    if (strcmp(currentBranch, "main") == 0) {
+        lv_obj_set_style_bg_color(g_btnMain, COL_GREEN, 0);
+    } else {
+        lv_obj_set_style_bg_color(g_btnMain, COL_BTN_BG, 0);
+    }
+
+    lv_obj_t* mainLbl = lv_label_create(g_btnMain);
+    lv_label_set_text(mainLbl, "Main");
+    lv_obj_set_style_text_font(mainLbl, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(mainLbl, COL_WHITE, 0);
+    lv_obj_center(mainLbl);
+
+    // Development-knapp
+    g_btnDev = lv_button_create(branchContainer);
+    lv_obj_set_size(g_btnDev, btnW, btnH);
+    lv_obj_set_style_radius(g_btnDev, 12, 0);
+    lv_obj_add_event_cb(g_btnDev, branchDevCb, LV_EVENT_CLICKED, nullptr);
+
+    // Highlight hvis development er valgt
+    if (strcmp(currentBranch, "development") == 0) {
+        lv_obj_set_style_bg_color(g_btnDev, COL_GREEN, 0);
+    } else {
+        lv_obj_set_style_bg_color(g_btnDev, COL_BTN_BG, 0);
+    }
+
+    lv_obj_t* devLbl = lv_label_create(g_btnDev);
+    lv_label_set_text(devLbl, "Development");
+    lv_obj_set_style_text_font(devLbl, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(devLbl, COL_WHITE, 0);
+    lv_obj_center(devLbl);
+
     // Knapper på bunnen (Reboot + Avbryt)
     lv_obj_t* footer = lv_obj_create(g_screenConfig);
     lv_obj_set_size(footer, 440, 100);
@@ -503,8 +559,6 @@ static void buildConfigScreen() {
     lv_obj_set_flex_flow(footer, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(footer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(footer, 20, 0);
-
-    int btnW = 180, btnH = 80;
 
     // Omstart-knapp
     lv_obj_t* rebootBtn = lv_button_create(footer);
@@ -636,4 +690,40 @@ static void rebootBtnCb(lv_event_t* e) {
     Serial.println("[UI] Rebooting requested...");
     delay(100);
     ESP.restart();
+}
+
+static void branchMainCb(lv_event_t* e) {
+    (void)e;
+    Serial.println("[UI] Switching to Main branch...");
+    
+    const char* tapId = settingsGetTapId();
+    if (updateTapBranch(tapId, "main")) {
+        settingsSetTargetBranch("main");
+        
+        // Oppdater UI - highlight Main, fjern highlight fra Dev
+        lv_obj_set_style_bg_color(g_btnMain, COL_GREEN, 0);
+        lv_obj_set_style_bg_color(g_btnDev, COL_BTN_BG, 0);
+        
+        Serial.println("[UI] Branch switched to Main successfully");
+    } else {
+        Serial.println("[UI] Failed to switch branch");
+    }
+}
+
+static void branchDevCb(lv_event_t* e) {
+    (void)e;
+    Serial.println("[UI] Switching to Development branch...");
+    
+    const char* tapId = settingsGetTapId();
+    if (updateTapBranch(tapId, "development")) {
+        settingsSetTargetBranch("development");
+        
+        // Oppdater UI - highlight Dev, fjern highlight fra Main
+        lv_obj_set_style_bg_color(g_btnDev, COL_GREEN, 0);
+        lv_obj_set_style_bg_color(g_btnMain, COL_BTN_BG, 0);
+        
+        Serial.println("[UI] Branch switched to Development successfully");
+    } else {
+        Serial.println("[UI] Failed to switch branch");
+    }
 }

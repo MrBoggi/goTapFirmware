@@ -81,3 +81,11 @@ bool fetchTapsList(TapList& out);
  * @return true on success (even if no update available), false on error.
  */
 bool fetchOtaUpdateInfo(const char* currentVersion, const char* targetBranch, OtaUpdateInfo& out);
+
+/**
+ * @brief Update target branch for current tap.
+ * @param tapId     Tap ID string.
+ * @param branch    New branch name ("main" or "development").
+ * @return true on success (HTTP 204), false on error.
+ */
+bool updateTapBranch(const char* tapId, const char* branch);
