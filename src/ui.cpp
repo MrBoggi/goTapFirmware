@@ -517,44 +517,48 @@ static void buildPourScreen() {
 }
 
 static void buildConfigScreen() {
+    // Overskrift (endret fra "Velg Kran" til "Innstillinger")
     lv_obj_t* title = lv_label_create(g_screenConfig);
-    lv_label_set_text(title, "Velg Kran");
+    lv_label_set_text(title, "Innstillinger");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_36, 0);
     lv_obj_set_style_text_color(title, COL_WHITE, 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 15);
 
-    g_tapListContainer = lv_obj_create(g_screenConfig);
-    lv_obj_set_size(g_tapListContainer, 440, 300);
-    lv_obj_align(g_tapListContainer, LV_ALIGN_CENTER, 0, -10);
-    lv_obj_set_style_bg_opa(g_tapListContainer, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(g_tapListContainer, 0, 0);
-    
-    // Sett opp flex layout for knappene
-    lv_obj_set_flex_flow(g_tapListContainer, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_style_pad_row(g_tapListContainer, 15, 0);
-    lv_obj_set_style_pad_column(g_tapListContainer, 15, 0);
-    lv_obj_set_flex_align(g_tapListContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-
-    // Versjonslabel nederst på skjermen
+    // Versjonslabel rett under overskriften
     lv_obj_t* versionLbl = lv_label_create(g_screenConfig);
     char versionBuf[32];
     snprintf(versionBuf, sizeof(versionBuf), "Firmware: %s", GOTAP_VERSION);
     lv_label_set_text(versionLbl, versionBuf);
     lv_obj_set_style_text_font(versionLbl, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(versionLbl, COL_GREY, 0);
-    lv_obj_align(versionLbl, LV_ALIGN_BOTTOM_MID, 0, -15);
+    lv_obj_align(versionLbl, LV_ALIGN_TOP_MID, 0, 55);
 
-    // Branch-velger knapper (over footer)
+    // Kran-knapper container - justert størrelse og posisjon for å unngå scrollbar
+    g_tapListContainer = lv_obj_create(g_screenConfig);
+    lv_obj_set_size(g_tapListContainer, 440, 220);
+    lv_obj_align(g_tapListContainer, LV_ALIGN_TOP_MID, 0, 85);
+    lv_obj_set_style_bg_opa(g_tapListContainer, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(g_tapListContainer, 0, 0);
+    lv_obj_set_scrollbar_mode(g_tapListContainer, LV_SCROLLBAR_MODE_OFF);
+
+    // Sett opp flex layout for knappene
+    lv_obj_set_flex_flow(g_tapListContainer, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_row(g_tapListContainer, 15, 0);
+    lv_obj_set_style_pad_column(g_tapListContainer, 15, 0);
+    lv_obj_set_flex_align(g_tapListContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    // Branch-velger knapper (midt på skjermen)
     lv_obj_t* branchContainer = lv_obj_create(g_screenConfig);
-    lv_obj_set_size(branchContainer, 440, 100);
-    lv_obj_align(branchContainer, LV_ALIGN_BOTTOM_MID, 0, -110);
+    lv_obj_set_size(branchContainer, 440, 90);
+    lv_obj_align(branchContainer, LV_ALIGN_TOP_MID, 0, 315);
     lv_obj_set_style_bg_opa(branchContainer, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(branchContainer, 0, 0);
+    lv_obj_set_scrollbar_mode(branchContainer, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_flex_flow(branchContainer, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(branchContainer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(branchContainer, 20, 0);
 
-    int btnW = 180, btnH = 80;
+    int btnW = 180, btnH = 70;
     const char* currentBranch = settingsGetTargetBranch();
 
     // Main-knapp
@@ -597,10 +601,11 @@ static void buildConfigScreen() {
 
     // Knapper på bunnen (Reboot + Avbryt)
     lv_obj_t* footer = lv_obj_create(g_screenConfig);
-    lv_obj_set_size(footer, 440, 100);
-    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_size(footer, 440, 90);
+    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -15);
     lv_obj_set_style_bg_opa(footer, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(footer, 0, 0);
+    lv_obj_set_scrollbar_mode(footer, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_flex_flow(footer, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(footer, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(footer, 20, 0);
